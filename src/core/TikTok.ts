@@ -498,13 +498,13 @@ export class TikTokScraper extends EventEmitter {
                 await this.collectPostsV2(result.items);
             }
 
+            this.maxCursor = parseInt(maxCursor, 10);
             if (!hasMore) {
                 throw new Error('No more posts');
             }
             if (this.collector.length >= this.number && this.number !== 0) {
                 throw new Error('Done');
             }
-            this.maxCursor = parseInt(maxCursor, 10);
         } catch (error) {
             throw error.message;
         }
