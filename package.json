@@ -51,7 +51,7 @@
         "format": "prettier --config ./.prettierrc.js --write './src/**/*.ts'",
         "lint": "eslint ./src/**/*.ts",
         "test": "eslint ./src/**/*.ts && jest --coverage --verbose",
-        "install": "npm run build"
+        "prepare": "npm run build"
     },
     "jest": {
         "verbose": true,
