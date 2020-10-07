@@ -134,6 +134,7 @@ export class TikTokScraper extends EventEmitter {
         signature = '',
         webHookUrl = '',
         method = 'POST',
+        maxCursor = 0,
     }: TikTokConstructor) {
         super();
         this.mainHost = 'https://m.tiktok.com/';
@@ -170,7 +171,7 @@ export class TikTokScraper extends EventEmitter {
         this.historyPath = process.env.SCRAPING_FROM_DOCKER ? '/usr/app/files' : historyPath || tmpdir();
         this.idStore = '';
         this.noWaterMark = noWaterMark;
-        this.maxCursor = 0;
+        this.maxCursor = maxCursor;
         this.noDuplicates = [];
         this.timeout = timeout;
         this.bulk = bulk;
@@ -352,6 +353,7 @@ export class TikTokScraper extends EventEmitter {
 
         return {
             collector: this.collector,
+            maxCursor: this.maxCursor,
             ...(this.download ? { zip } : {}),
             ...(this.filetype === 'all' ? { json, csv } : {}),
             ...(this.filetype === 'json' ? { json } : {}),

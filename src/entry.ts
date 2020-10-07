@@ -53,7 +53,7 @@ const proxyFromFile = async (file: string) => {
     }
 };
 
-const promiseScraper = async (input: string, type: ScrapeType, options = {} as Options): Promise<Result> => {
+const promiseScraper = async (input: string, type: ScrapeType, options = {} as Options, maxCursor?: number): Promise<Result> => {
     if (options && typeof options !== 'object') {
         throw new TypeError('Object is expected');
     }
@@ -65,7 +65,7 @@ const promiseScraper = async (input: string, type: ScrapeType, options = {} as O
         options!.userAgent = randomUserAgent();
     }
 
-    const constructor: TikTokConstructor = { ...INIT_OPTIONS, ...options, ...{ type, input } };
+    const constructor: TikTokConstructor = { ...INIT_OPTIONS, ...options, ...{ type, input, maxCursor } };
 
     const scraper = new TikTokScraper(constructor);
 
@@ -86,10 +86,10 @@ const eventScraper = (input: string, type: ScrapeType, options = {} as Options):
     return new TikTokScraper(contructor);
 };
 
-export const hashtag = async (input: string, options?: Options): Promise<Result> => promiseScraper(input, 'hashtag', options);
-export const user = async (input: string, options?: Options): Promise<Result> => promiseScraper(input, 'user', options);
-export const trend = async (input: string, options?: Options): Promise<Result> => promiseScraper(input, 'trend', options);
-export const music = async (input: string, options?: Options): Promise<Result> => promiseScraper(input, 'music', options);
+export const hashtag = async (input: string, options?: Options, maxCursor?: number): Promise<Result> => promiseScraper(input, 'hashtag', options, maxCursor);
+export const user = async (input: string, options?: Options, maxCursor?: number): Promise<Result> => promiseScraper(input, 'user', options, maxCursor);
+export const trend = async (input: string, options?: Options, maxCursor?: number): Promise<Result> => promiseScraper(input, 'trend', options, maxCursor);
+export const music = async (input: string, options?: Options, maxCursor?: number): Promise<Result> => promiseScraper(input, 'music', options, maxCursor);
 
 export const hashtagEvent = (input: string, options: Options): TikTokScraper => eventScraper(input, 'hashtag', options);
 export const userEvent = (input: string, options: Options): TikTokScraper => eventScraper(input, 'user', options);
@@ -285,7 +285,7 @@ const batchProcessor = (batch: Batcher[], options = {} as Options): Promise<any[
                 switch (item.type) {
                     case 'user':
                         try {
-                            const output = await user(item.input, { ...{ bulk: true }, ...options });
+                            const output = await user(item.input, { ...{ bulk: true }, ...options }, item.maxCursor);
                             result.push({ type: item.type, input: item.input, completed: true, scraped: output.collector.length });
                             console.log(`Scraping completed: ${item.type} ${item.input}`);
                         } catch (error) {
@@ -295,7 +295,7 @@ const batchProcessor = (batch: Batcher[], options = {} as Options): Promise<any[
                         break;
                     case 'hashtag':
                         try {
-                            const output = await hashtag(item.input, { ...{ bulk: true }, ...options });
+                            const output = await hashtag(item.input, { ...{ bulk: true }, ...options }, item.maxCursor);
                             result.push({ type: item.type, input: item.input, completed: true, scraped: output.collector.length });
                             console.log(`Scraping completed: ${item.type} ${item.input}`);
                         } catch (error) {
@@ -315,7 +315,7 @@ const batchProcessor = (batch: Batcher[], options = {} as Options): Promise<any[
                         break;
                     case 'music':
                         try {
-                            const output = await music(item.input, { ...{ bulk: true }, ...options });
+                            const output = await music(item.input, { ...{ bulk: true }, ...options }, item.maxCursor);
                             result.push({ type: item.type, input: item.input, completed: true, scraped: output.collector.length });
                             console.log(`Scraping completed: ${item.type} ${item.input}`);
                         } catch (error) {

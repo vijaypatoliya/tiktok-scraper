@@ -73,6 +73,7 @@ export interface TikTokConstructor {
     signature?: string;
     webHookUrl?: string;
     method?: string;
+    maxCursor?: number;
 }
 
 export interface Hashtags {
