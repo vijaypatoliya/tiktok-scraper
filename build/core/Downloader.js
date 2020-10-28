@@ -12,11 +12,11 @@ const socks_proxy_agent_1 = require("socks-proxy-agent");
 const async_1 = require("async");
 const helpers_1 = require("../helpers");
 class Downloader {
-    constructor({ progress, proxy, noWaterMark, userAgent, filepath, bulk }) {
+    constructor({ progress, proxy, noWaterMark, headers, filepath, bulk }) {
         this.progress = true || progress;
         this.progressBar = [];
         this.noWaterMark = noWaterMark;
-        this.userAgent = userAgent;
+        this.headers = headers;
         this.filepath = filepath;
         this.mbars = new helpers_1.MultipleBar();
         this.proxy = proxy;
@@ -64,10 +64,7 @@ class Downloader {
             }
             r.get({
                 url: item.videoUrlNoWaterMark ? item.videoUrlNoWaterMark : item.videoUrl,
-                headers: {
-                    'user-agent': 'okhttp',
-                    referer: 'https://www.tiktok.com/',
-                },
+                headers: this.headers,
             })
                 .on('response', response => {
                 if (this.progress && !this.bulk) {
@@ -135,10 +132,7 @@ class Downloader {
         if (!url) {
             url = post.videoUrl;
         }
-        const options = Object.assign(Object.assign({ uri: url, headers: {
-                'user-agent': 'okhttp',
-                referer: 'https://www.tiktok.com/',
-            }, encoding: null }, (proxy.proxy && proxy.socks ? { agent: proxy.proxy } : {})), (proxy.proxy && !proxy.socks ? { proxy: `http://${proxy.proxy}/` } : {}));
+        const options = Object.assign(Object.assign({ uri: url, method: 'GET', headers: this.headers, encoding: null }, (proxy.proxy && proxy.socks ? { agent: proxy.proxy } : {})), (proxy.proxy && !proxy.socks ? { proxy: `http://${proxy.proxy}/` } : {}));
         const result = await request_promise_1.default(options);
         await bluebird_1.fromCallback(cb => fs_1.writeFile(`${this.filepath}/${post.id}.mp4`, result, cb));
     }

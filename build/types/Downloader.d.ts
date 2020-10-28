@@ -1,9 +1,9 @@
-import { PostCollector } from '.';
+import { PostCollector, Headers } from '.';
 export interface DownloaderConstructor {
     progress: boolean;
     proxy: string[] | string;
     noWaterMark: boolean;
-    userAgent: string;
+    headers: Headers;
     filepath: string;
     bulk: boolean;
 }

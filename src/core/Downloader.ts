@@ -11,7 +11,7 @@ import { SocksProxyAgent } from 'socks-proxy-agent';
 import { forEachLimit } from 'async';
 
 import { MultipleBar } from '../helpers';
-import { DownloaderConstructor, PostCollector, DownloadParams, Proxy } from '../types';
+import { DownloaderConstructor, PostCollector, DownloadParams, Proxy, Headers } from '../types';
 
 export class Downloader {
     public progress: boolean;
@@ -24,17 +24,17 @@ export class Downloader {
 
     public noWaterMark: boolean;
 
-    public userAgent: string;
-
     public filepath: string;
 
     public bulk: boolean;
 
-    constructor({ progress, proxy, noWaterMark, userAgent, filepath, bulk }: DownloaderConstructor) {
+    public headers: Headers;
+
+    constructor({ progress, proxy, noWaterMark, headers, filepath, bulk }: DownloaderConstructor) {
         this.progress = true || progress;
         this.progressBar = [];
         this.noWaterMark = noWaterMark;
-        this.userAgent = userAgent;
+        this.headers = headers;
         this.filepath = filepath;
         this.mbars = new MultipleBar();
         this.proxy = proxy;
@@ -99,10 +99,7 @@ export class Downloader {
             }
             r.get({
                 url: item.videoUrlNoWaterMark ? item.videoUrlNoWaterMark : item.videoUrl,
-                headers: {
-                    'user-agent': 'okhttp',
-                    referer: 'https://www.tiktok.com/',
-                },
+                headers: this.headers,
             })
                 .on('response', response => {
                     if (this.progress && !this.bulk) {
@@ -187,10 +184,8 @@ export class Downloader {
         }
         const options = ({
             uri: url,
-            headers: {
-                'user-agent': 'okhttp',
-                referer: 'https://www.tiktok.com/',
-            },
+            method: 'GET',
+            headers: this.headers,
             encoding: null,
             ...(proxy.proxy && proxy.socks ? { agent: proxy.proxy } : {}),
             ...(proxy.proxy && !proxy.socks ? { proxy: `http://${proxy.proxy}/` } : {}),
