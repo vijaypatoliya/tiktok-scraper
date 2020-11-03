@@ -438,7 +438,7 @@ export class TikTokScraper extends EventEmitter {
                             break;
                         case 'hashtag':
                             this.getHashTagId()
-                                .then(query => this.submitScrapingRequest({ ...query, cursor: item === 1 ? 0 : (item - 1) * query.count! }, true))
+                                .then(query => this.submitScrapingRequest({ ...query, cursor: this.maxCursor }, true))
                                 .then(() => cb(null))
                                 .catch(error => cb(error));
                             break;
@@ -481,7 +481,11 @@ export class TikTokScraper extends EventEmitter {
             }
             await this.collectPosts(challenge ? result.itemList : result.items);
 
-            this.maxCursor = parseInt(maxCursor, 10);
+            if (maxCursor !== undefined) {
+                this.maxCursor = parseInt(maxCursor, 10);
+            } else {
+                this.maxCursor = parseInt(this.maxCursor.toString(), 10) + this.number;
+            }
             if (!hasMore) {
                 throw new Error('No more posts');
             }
