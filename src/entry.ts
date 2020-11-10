@@ -76,7 +76,8 @@ const promiseScraper = async (input: string, type: ScrapeType, options = {} as O
     if (options?.proxyFile) {
         options.proxy = await proxyFromFile(options?.proxyFile);
     }
-
+    INIT_OPTIONS.headers['User-Agent'] = randomUserAgent();
+    
     const constructor: TikTokConstructor = { ...INIT_OPTIONS, ...options, ...{ type, input, maxCursor } };
 
     const scraper = new TikTokScraper(constructor);
