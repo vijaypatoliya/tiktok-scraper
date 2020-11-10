@@ -54,6 +54,7 @@ const promiseScraper = async (input, type, options = {}, maxCursor) => {
     if (options === null || options === void 0 ? void 0 : options.proxyFile) {
         options.proxy = await proxyFromFile(options === null || options === void 0 ? void 0 : options.proxyFile);
     }
+    INIT_OPTIONS.headers['User-Agent'] = randomUserAgent();
     const constructor = Object.assign(Object.assign(Object.assign({}, INIT_OPTIONS), options), { type, input, maxCursor });
     const scraper = new core_1.TikTokScraper(constructor);
     const result = await scraper.scrape();
