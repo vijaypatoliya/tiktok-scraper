@@ -107,6 +107,8 @@ export class TikTokScraper extends EventEmitter {
 
     private headers: Headers;
 
+    private verifyFp: string;
+
     constructor({
         download,
         filepath,
@@ -134,8 +136,10 @@ export class TikTokScraper extends EventEmitter {
         method = 'POST',
         maxCursor = 0,
         headers,
+        verifyFp = '',
     }: TikTokConstructor) {
         super();
+        this.verifyFp = verifyFp;
         this.mainHost = 'https://m.tiktok.com/';
         this.headers = headers;
         this.download = download;
@@ -230,6 +234,23 @@ export class TikTokScraper extends EventEmitter {
                 return this.filepath ? `${this.filepath}/trend` : `trend`;
             case 'video':
                 return this.filepath ? `${this.filepath}/video` : `video`;
+            default:
+                throw new TypeError(`${this.scrapeType} is not supported`);
+        }
+    }
+
+    /**
+     * Get api endpoint
+     */
+    private get getApiEndpoint(): string {
+        switch (this.scrapeType) {
+            case 'user':
+            case 'trend':
+                return `${this.mainHost}api/item_list/`;
+            case 'hashtag':
+                return `${this.mainHost}api/challenge/item_list/`;
+            case 'music':
+                return `${this.mainHost}api/music/item_list/`;
             default:
                 throw new TypeError(`${this.scrapeType} is not supported`);
         }
@@ -469,17 +490,17 @@ export class TikTokScraper extends EventEmitter {
      * Submit request to the TikTok web API
      * Collect received metadata
      */
-    private async submitScrapingRequest(query: RequestQuery, challenge = false): Promise<any> {
+    private async submitScrapingRequest(query: RequestQuery, updatedApiResponse = false): Promise<any> {
         try {
-            const result = await this.scrapeData<ItemListData>(query, challenge);
+            const result = await this.scrapeData<ItemListData>(query);
             if (result.statusCode !== 0) {
                 throw new Error(`Can't scrape more posts`);
             }
             const { hasMore, maxCursor } = result;
-            if ((challenge && !result.itemList) || (!challenge && !result.items)) {
+            if ((updatedApiResponse && !result.itemList) || (!updatedApiResponse && !result.items)) {
                 throw new Error('No more posts');
             }
-            await this.collectPosts(challenge ? result.itemList : result.items);
+            await this.collectPosts(updatedApiResponse ? result.itemList : result.items);
 
             if (maxCursor !== undefined) {
                 this.maxCursor = parseInt(maxCursor, 10);
@@ -489,6 +510,7 @@ export class TikTokScraper extends EventEmitter {
             if (!hasMore) {
                 throw new Error('No more posts');
             }
+
             if (this.collector.length >= this.number && this.number !== 0) {
                 throw new Error('Done');
             }
@@ -570,6 +592,7 @@ export class TikTokScraper extends EventEmitter {
                 const readFromStore = (await fromCallback(cb =>
                     readFile(`${this.historyPath}/tiktok_history.json`, { encoding: 'utf-8' }, cb),
                 )) as string;
+
                 history = JSON.parse(readFromStore);
             } catch (error) {
                 history[historyType] = {
@@ -713,21 +736,20 @@ export class TikTokScraper extends EventEmitter {
         }
     }
 
-    private async scrapeData<T>(qs: RequestQuery, challenge = false): Promise<T> {
-        const url = `${this.mainHost}api/${challenge ? 'challenge/' : ''}item_list/`;
+    private async scrapeData<T>(qs: RequestQuery): Promise<T> {
         const query = Object.keys(qs)
             .map(key => `${key}=${qs[key]}`)
             .join('&');
 
-        const urlToSign = `${url}?${query}`;
+        const urlToSign = `${this.getApiEndpoint}?${query}`;
 
         const signature = this.signature ? this.signature : sign(this.headers['User-Agent'], urlToSign);
 
         this.signature = '';
-        this.storeValue = this.scrapeType === 'trend' ? 'trend' : qs.id!;
+        this.storeValue = this.scrapeType === 'trend' ? 'trend' : qs.id || qs.challengeID! || qs.musicID!;
 
         const options = {
-            uri: url,
+            uri: this.getApiEndpoint,
             method: 'GET',
             qs: {
                 ...qs,
@@ -756,7 +778,7 @@ export class TikTokScraper extends EventEmitter {
             count: this.number > 30 ? 50 : 30,
             minCursor: 0,
             maxCursor: 0,
-            verifyFp: '',
+            verifyFp: this.verifyFp,
         };
     }
 
@@ -769,13 +791,13 @@ export class TikTokScraper extends EventEmitter {
             this.input = musicIdRegex[1] as string;
         }
         return {
-            id: this.input,
-            secUid: '',
+            musicID: this.input,
             lang: '',
-            sourceType: CONST.sourceType.music,
-            count: this.number > 30 ? 50 : 30,
             minCursor: 0,
             maxCursor: 0,
+            aid: 1988,
+            count: 30,
+            cursor: 0,
             verifyFp: '',
         };
     }
@@ -790,6 +812,7 @@ export class TikTokScraper extends EventEmitter {
                 count: 30,
                 cursor: 0,
                 aid: 1988,
+                verifyFp: this.verifyFp,
             };
         }
         const id = encodeURIComponent(this.input);
@@ -809,6 +832,7 @@ export class TikTokScraper extends EventEmitter {
                 count: 30,
                 cursor: 0,
                 aid: 1988,
+                verifyFp: this.verifyFp,
             };
         } catch (error) {
             throw error.message;
@@ -828,13 +852,13 @@ export class TikTokScraper extends EventEmitter {
                 minCursor: 0,
                 maxCursor: 0,
                 lang: '',
-                verifyFp: '',
+                verifyFp: this.verifyFp,
             };
         }
 
         const id = encodeURIComponent(this.input);
         const query = {
-            uri: `${this.mainHost}node/share/user/@${id}?uniqueId=${id}`,
+            uri: `${this.mainHost}node/share/user/@${id}?uniqueId=${id}&verifyFp=${this.verifyFp}`,
             method: 'GET',
             json: true,
         };
@@ -852,7 +876,7 @@ export class TikTokScraper extends EventEmitter {
                 minCursor: 0,
                 maxCursor: 0,
                 lang: '',
-                verifyFp: '',
+                verifyFp: this.verifyFp,
             };
         } catch (error) {
             throw error.message;
@@ -868,7 +892,7 @@ export class TikTokScraper extends EventEmitter {
             throw `Username is missing`;
         }
         const query = {
-            uri: `${this.mainHost}node/share/user/@${this.input}?uniqueId=${this.input}`,
+            uri: `${this.mainHost}node/share/user/@${this.input}?uniqueId=${this.input}&verifyFp=${this.verifyFp}`,
             method: 'GET',
             json: true,
         };
@@ -963,7 +987,7 @@ export class TikTokScraper extends EventEmitter {
             throw `Url is missing`;
         }
         const options = {
-            uri: this.input,
+            uri: `${this.input}?verifyFp=${this.verifyFp}`,
             method: 'GET',
             json: true,
         };

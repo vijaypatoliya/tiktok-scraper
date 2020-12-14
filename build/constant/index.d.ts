@@ -7,5 +7,7 @@ declare const _default: {
         trend: number;
     };
     userAgentList: string[];
+    verifyFp: () => never;
+    userAgent: () => string;
 };
 export = _default;

@@ -76,6 +76,7 @@ export interface Item {
 }
 export interface RequestQuery {
     id?: string;
+    musicID?: string;
     secUid?: string;
     shareUid?: string;
     type?: number;
@@ -88,6 +89,7 @@ export interface RequestQuery {
     challengeID?: string;
     cursor?: number;
     aid?: number;
+    appId?: number;
 }
 export interface VideoProps {
     props: {
@@ -103,6 +105,7 @@ export interface ItemListData {
     hasMore: boolean;
     maxCursor: string;
     minCursor: string;
+    cursor: string;
 }
 export interface FeedItems {
     id: string;

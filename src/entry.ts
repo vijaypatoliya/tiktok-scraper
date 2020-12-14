@@ -22,35 +22,32 @@ import {
 import CONST from './constant';
 import { makeid } from './helpers';
 
-const INIT_OPTIONS = {
-    number: 30,
-    download: false,
-    zip: false,
-    asyncDownload: 5,
-    asyncScraping: 3,
-    proxy: [],
-    filepath: process.cwd(),
-    filetype: 'na',
-    progress: false,
-    event: false,
-    by_user_id: false,
-    noWaterMark: false,
-    hdVideo: false,
-    timeout: 0,
-    tac: '',
-    signature: '',
-    headers: {
-        'User-Agent': CONST.userAgentList[Math.floor(Math.random() * CONST.userAgentList.length)],
-        Referer: 'https://www.tiktok.com/',
-        Cookie: `tt_webid_v2=68${makeid(16)}`,
-    },
+const getInitOptions = () => {
+    return {
+        number: 30,
+        download: false,
+        zip: false,
+        asyncDownload: 5,
+        asyncScraping: 3,
+        proxy: [],
+        filepath: '',
+        filetype: 'na',
+        progress: false,
+        event: false,
+        by_user_id: false,
+        noWaterMark: false,
+        hdVideo: false,
+        timeout: 0,
+        tac: '',
+        signature: '',
+        verifyFp: CONST.verifyFp(),
+        headers: {
+            'User-Agent': CONST.userAgent(),
+            Referer: 'https://www.tiktok.com/',
+            Cookie: `tt_webid_v2=68${makeid(16)}`,
+        },
+    };
 };
-
-/**
- * Randomize user-agent version
- * Only if {randomUa} is set to {true}
- */
-const randomUserAgent = () => CONST.userAgentList[Math.floor(Math.random() * CONST.userAgentList.length)];
 
 /**
  * Load proxys from a file
@@ -73,12 +70,12 @@ const promiseScraper = async (input: string, type: ScrapeType, options = {} as O
     if (options && typeof options !== 'object') {
         throw new TypeError('Object is expected');
     }
+
     if (options?.proxyFile) {
         options.proxy = await proxyFromFile(options?.proxyFile);
     }
-    INIT_OPTIONS.headers['User-Agent'] = randomUserAgent();
-    
-    const constructor: TikTokConstructor = { ...INIT_OPTIONS, ...options, ...{ type, input, maxCursor } };
+
+    const constructor: TikTokConstructor = { ...getInitOptions(), ...options, ...{ type, input, maxCursor } };
 
     const scraper = new TikTokScraper(constructor);
 
@@ -91,7 +88,7 @@ const eventScraper = (input: string, type: ScrapeType, options = {} as Options):
         throw new TypeError('Object is expected');
     }
 
-    const contructor: TikTokConstructor = { ...INIT_OPTIONS, ...options, ...{ type, input, event: true } };
+    const contructor: TikTokConstructor = { ...getInitOptions(), ...options, ...{ type, input, event: true } };
     return new TikTokScraper(contructor);
 };
 
@@ -113,7 +110,7 @@ export const getHashtagInfo = async (input: string, options = {} as Options): Pr
         options.proxy = await proxyFromFile(options?.proxyFile);
     }
 
-    const contructor: TikTokConstructor = { ...INIT_OPTIONS, ...options, ...{ type: 'signle_hashtag' as ScrapeType, input } };
+    const contructor: TikTokConstructor = { ...getInitOptions(), ...options, ...{ type: 'signle_hashtag' as ScrapeType, input } };
     const scraper = new TikTokScraper(contructor);
 
     const result = await scraper.getHashtagInfo();
@@ -128,7 +125,7 @@ export const getMusicInfo = async (input: string, options = {} as Options): Prom
         options.proxy = await proxyFromFile(options?.proxyFile);
     }
 
-    const contructor: TikTokConstructor = { ...INIT_OPTIONS, ...options, ...{ type: 'single_music' as ScrapeType, input } };
+    const contructor: TikTokConstructor = { ...getInitOptions(), ...options, ...{ type: 'single_music' as ScrapeType, input } };
     const scraper = new TikTokScraper(contructor);
 
     const result = await scraper.getMusicInfo();
@@ -139,14 +136,11 @@ export const getUserProfileInfo = async (input: string, options = {} as Options)
     if (options && typeof options !== 'object') {
         throw new TypeError('Object is expected');
     }
-    if (options?.randomUa) {
-        INIT_OPTIONS.headers['User-Agent'] = randomUserAgent();
-    }
 
     if (options?.proxyFile) {
         options.proxy = await proxyFromFile(options?.proxyFile);
     }
-    const contructor: TikTokConstructor = { ...INIT_OPTIONS, ...options, ...{ type: 'sinsgle_user' as ScrapeType, input } };
+    const contructor: TikTokConstructor = { ...getInitOptions(), ...options, ...{ type: 'sinsgle_user' as ScrapeType, input } };
     const scraper = new TikTokScraper(contructor);
 
     const result = await scraper.getUserProfileInfo();
@@ -161,7 +155,7 @@ export const signUrl = async (input: string, options = {} as Options): Promise<s
         options.proxy = await proxyFromFile(options?.proxyFile);
     }
 
-    const contructor: TikTokConstructor = { ...INIT_OPTIONS, ...options, ...{ type: 'signature' as ScrapeType, input } };
+    const contructor: TikTokConstructor = { ...getInitOptions(), ...options, ...{ type: 'signature' as ScrapeType, input } };
     const scraper = new TikTokScraper(contructor);
 
     const result = await scraper.signUrl();
@@ -172,13 +166,11 @@ export const getVideoMeta = async (input: string, options = {} as Options): Prom
     if (options && typeof options !== 'object') {
         throw new TypeError('Object is expected');
     }
-    if (options?.randomUa) {
-        INIT_OPTIONS.headers['User-Agent'] = randomUserAgent();
-    }
+
     if (options?.proxyFile) {
         options.proxy = await proxyFromFile(options?.proxyFile);
     }
-    const contructor: TikTokConstructor = { ...INIT_OPTIONS, ...options, ...{ type: 'video_meta' as ScrapeType, input } };
+    const contructor: TikTokConstructor = { ...getInitOptions(), ...options, ...{ type: 'video_meta' as ScrapeType, input } };
     const scraper = new TikTokScraper(contructor);
 
     const result = await scraper.getVideoMeta();
@@ -192,13 +184,11 @@ export const video = async (input: string, options = {} as Options): Promise<any
     if (options && typeof options !== 'object') {
         throw new TypeError('Object is expected');
     }
-    if (options?.randomUa) {
-        INIT_OPTIONS.headers['User-Agent'] = randomUserAgent();
-    }
+
     if (options?.proxyFile) {
         options.proxy = await proxyFromFile(options?.proxyFile);
     }
-    const contructor: TikTokConstructor = { ...INIT_OPTIONS, ...options, ...{ type: 'video' as ScrapeType, input } };
+    const contructor: TikTokConstructor = { ...getInitOptions(), ...options, ...{ type: 'video' as ScrapeType, input } };
     const scraper = new TikTokScraper(contructor);
     const result: PostCollector = await scraper.getVideoMeta();
 
@@ -390,9 +380,7 @@ export const fromfile = async (input: string, options = {} as Options) => {
     if (!batch.length) {
         throw `File is empty: ${input}`;
     }
-    if (options?.randomUa) {
-        INIT_OPTIONS.headers['User-Agent'] = randomUserAgent();
-    }
+
     if (options?.proxyFile) {
         options.proxy = await proxyFromFile(options?.proxyFile);
     }
