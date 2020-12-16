@@ -90,6 +90,7 @@ export interface RequestQuery {
     cursor?: number;
     aid?: number;
     appId?: number;
+    user_agent?: string;
 }
 export interface VideoProps {
     props: {

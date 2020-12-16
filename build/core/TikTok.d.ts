@@ -25,6 +25,7 @@ export declare class TikTokScraper extends EventEmitter {
     Downloader: Downloader;
     private storeValue;
     private maxCursor;
+    private minCursor;
     private noWaterMark;
     private noDuplicates;
     private timeout;
