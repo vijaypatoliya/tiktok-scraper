@@ -6,6 +6,7 @@ export interface Proxy {
 }
 export interface Options {
     proxy?: string[] | string;
+    sessionList?: string[];
     proxyFile?: string;
     event?: boolean;
     by_user_id?: boolean;
@@ -60,6 +61,7 @@ export interface TikTokConstructor {
     maxCursor?: number;
     headers: Headers;
     verifyFp?: string;
+    sessionList?: string[];
 }
 export interface Hashtags {
     id: string;
@@ -128,7 +130,7 @@ export interface Result {
     csv?: string;
 }
 export interface Headers {
-    'User-Agent': string;
-    Referer?: string;
-    Cookie?: string;
+    'user-agent': string;
+    referer?: string;
+    cookie?: string;
 }

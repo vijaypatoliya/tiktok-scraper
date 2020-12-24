@@ -39,8 +39,9 @@ export declare class TikTokScraper extends EventEmitter {
     private method;
     private httpRequests;
     private headers;
+    private sessionList;
     private verifyFp;
-    constructor({ download, filepath, filetype, proxy, asyncDownload, cli, event, progress, input, number, type, by_user_id, store_history, historyPath, noWaterMark, fileName, timeout, bulk, zip, test, hdVideo, signature, webHookUrl, method, maxCursor, headers, verifyFp, }: TikTokConstructor);
+    constructor({ download, filepath, filetype, proxy, asyncDownload, cli, event, progress, input, number, type, by_user_id, store_history, historyPath, noWaterMark, fileName, timeout, bulk, zip, test, hdVideo, signature, webHookUrl, method, maxCursor, headers, verifyFp, sessionList, }: TikTokConstructor);
     private get fileDestination();
     private get folderDestination();
     private get getApiEndpoint();
@@ -63,6 +64,7 @@ export declare class TikTokScraper extends EventEmitter {
     private getTrendingFeedQuery;
     private getMusicFeedQuery;
     private getHashTagId;
+    private getCookies;
     private getUserId;
     getUserProfileInfo(): Promise<UserMetadata>;
     getHashtagInfo(): Promise<HashtagMetadata>;

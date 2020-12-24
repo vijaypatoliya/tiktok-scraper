@@ -91,6 +91,23 @@ export interface RequestQuery {
     aid?: number;
     appId?: number;
     user_agent?: string;
+    screen_width?: number;
+    screen_height?: number;
+    browser_language?: string;
+    browser_platform?: string;
+    isIOS?: boolean;
+    isMobile?: boolean;
+    isAndroid?: boolean;
+    appType?: string;
+    browser_online?: boolean;
+    browser_version?: string;
+    browser_name?: string;
+    validUniqueId?: string;
+    uniqueId?: string;
+    isUniqueId?: boolean;
+    OS?: string;
+    app_name?: string;
+    device_platform?: string;
 }
 export interface VideoProps {
     props: {
@@ -283,5 +300,12 @@ export interface HashtagMetadata {
     stats: {
         videoCount: number;
         viewCount: number;
+    };
+}
+export interface WebHtmlUserMetadata {
+    props: {
+        pageProps: {
+            userInfo: UserMetadata;
+        };
     };
 }
